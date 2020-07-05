@@ -74,7 +74,7 @@ public class Contributor {
             logger.info("Used " + count + " times");
             return count;
         } catch (Exception ex) {
-            logger.fatal("Html document is not exist on this web page. Check preset URL."
+            logger.fatal("Html document is not exist on this web page. Check preset URL.");
             throw new ProjectException("Html document is not exist on this web page. Check preset URL.");
         }
     }
