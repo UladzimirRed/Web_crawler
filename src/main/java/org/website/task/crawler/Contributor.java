@@ -63,7 +63,7 @@ public class Contributor {
      * @return How many times was the word found
      */
     public int searchForWord(String searchWord) {
-        try{
+        try {
             int count = 0;
             if (htmlDocument == null) {
                 logger.error("Call crawl() before performing analysis on the document");
@@ -74,7 +74,7 @@ public class Contributor {
             logger.info("Used " + count + " times");
             return count;
         } catch (Exception ex) {
-            logger.fatal("Html document is not exist on this web page. Check preset URL.");
+            logger.fatal("Html document is not exist on this web page. Check preset URL."
             throw new ProjectException("Html document is not exist on this web page. Check preset URL.");
         }
     }
