@@ -1,5 +1,0 @@
-
-U	java:S106/"9Replace this use of System.out or System.err by a logger.(îåÆÇ8«ñÊ¡±.
-	java:S116"^Rename this field "MAX_PAGES_TO_SEARCH" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¯˜Ï—üÿÿÿÿ8ºë£±.
-C
-java:S1170"!Make this final field static too.(¯˜Ï—üÿÿÿÿ8ºë£±.
