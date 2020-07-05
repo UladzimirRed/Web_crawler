@@ -7,6 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.website.task.exception.ProjectException;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -18,9 +19,9 @@ import java.util.List;
  * and counts how many times this word is repeated on this page
  */
 public class Contributor {
-    private static Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger();
+    private static final List<String> links = new LinkedList<>();
     private static final int HTTP_STATUS_OK = 200;
-    private List<String> links = new LinkedList<>();
     private Document htmlDocument;
 
     /**
@@ -62,17 +63,20 @@ public class Contributor {
      * @return How many times was the word found
      */
     public int searchForWord(String searchWord) {
-        int count = 0;
-        if (htmlDocument == null) {
-            logger.error("Call crawl() before performing analysis on the document");
+        try{
+            int count = 0;
+            if (htmlDocument == null) {
+                logger.error("Call crawl() before performing analysis on the document");
+            }
+            logger.info("Searching for the word " + searchWord + "...");
+            String bodyText = htmlDocument.body().text();
+            for (int index = -1; (index = bodyText.indexOf(searchWord, index + 1)) != -1; count++) ;
+            logger.info("Used " + count + " times");
+            return count;
+        } catch (Exception ex) {
+            logger.fatal("Html document is not exist on this web page. Check preset URL.");
+            throw new ProjectException("Html document is not exist on this web page. Check preset URL.");
         }
-        logger.info("Searching for the word " + searchWord + "...");
-
-        String bodyText = htmlDocument.body().text();
-        for (int index = -1; (index = bodyText.indexOf(searchWord, index + 1)) != -1; count++) ;
-        logger.info("Used " + count + " times");
-
-        return count;
     }
 
     /**
@@ -81,7 +85,7 @@ public class Contributor {
      * @return the links
      */
     public List<String> getLinks() {
-        return this.links;
+        return links;
     }
 }
 

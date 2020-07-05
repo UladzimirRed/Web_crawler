@@ -15,7 +15,7 @@ import java.util.List;
  * contains one appropriate static method
  */
 public class CsvFileWriter {
-    private static Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger();
 
     /**
      * The method writes data to the CSV file

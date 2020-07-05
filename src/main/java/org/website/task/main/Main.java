@@ -8,6 +8,7 @@ import org.website.task.crawler.Disposer;
  */
 public class Main {
     private static final String URL = "https://compscicenter.ru/";
+    private static final String NONEXISTENT_URL = "http://nonexistent.by/";
     private static final String FIRST_WORD = "Computer";
     private static final String SECOND_WORD = "Center";
     private static final String THIRD_WORD = "Science";
@@ -19,6 +20,6 @@ public class Main {
      */
     public static void main(String[] args) {
         Disposer disposer = new Disposer();
-        disposer.execute(URL, FIRST_WORD, SECOND_WORD, THIRD_WORD);
+        disposer.execute(URL, FIRST_WORD, SECOND_WORD);
     }
 }

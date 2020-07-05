@@ -21,7 +21,7 @@ public class Disposer {
     private static final int MAX_PAGES_TO_SEARCH = 30;
     private static final Set<String> PAGES_VISITED = new HashSet<>();
     private static final List<String> PAGES_TO_VISIT = new LinkedList<>();
-    public static final List<String[]> data = new ArrayList<>();
+    public static final List<String[]> overallResultData = new ArrayList<>();
     Contributor contributor = new Contributor();
 
     /**
@@ -44,8 +44,8 @@ public class Disposer {
             }
             contributor.crawl(currentUrl);
             List<String> partsOfResult = makePartsOfResult(currentUrl, words);
-            data.add(partsOfResult.toArray(new String[0]));
-            CsvFileWriter.writeDataToCsvFile(CSV_FILE_PATH, data);
+            overallResultData.add(partsOfResult.toArray(new String[0]));
+            CsvFileWriter.writeDataToCsvFile(CSV_FILE_PATH, overallResultData);
             PAGES_TO_VISIT.addAll(contributor.getLinks());
         }
         List<String[]> topTenHits = makeSortedStrings();
@@ -68,7 +68,7 @@ public class Disposer {
     }
 
     private List<String[]> makeSortedStrings() {
-        return data.stream()
+        return overallResultData.stream()
                 .sorted(new HitsComparator().reversed())
                 .limit(10)
                 .collect(Collectors.toList());

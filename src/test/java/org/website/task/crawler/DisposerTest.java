@@ -19,6 +19,6 @@ public class DisposerTest {
     @Test
     public void executeTest() {
         disposer.execute(TEST_URL, TEST_WORD);
-        assertEquals(EXPECTED_LIST_SIZE, Disposer.data.size());
+        assertEquals(EXPECTED_LIST_SIZE, Disposer.overallResultData.size());
     }
 }
