@@ -20,6 +20,6 @@ public class Main {
      */
     public static void main(String[] args) {
         Disposer disposer = new Disposer();
-        disposer.execute(URL, FIRST_WORD, SECOND_WORD);
+        disposer.execute(URL, FIRST_WORD, SECOND_WORD, THIRD_WORD);
     }
 }
