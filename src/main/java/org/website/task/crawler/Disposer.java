@@ -1,10 +1,13 @@
 package org.website.task.crawler;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.website.task.util.CsvFileWriter;
+import org.website.task.util.HitsComparator;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -14,66 +17,86 @@ import java.util.*;
 public class Disposer {
     private static Logger logger = LogManager.getLogger();
     private static final String CSV_FILE_PATH = "./src/main/resources/data/result.csv";
+    private static final String CSV_TOP_TEN_FILE_PATH = "./src/main/resources/data/resultTop.csv";
 
-    private final int MAX_PAGES_TO_SEARCH = 20;
-    private Set<String> pagesVisited = new HashSet<>();
-    private List<String> pagesToVisit = new LinkedList<>();
-    private List<String[]> data = new ArrayList<>();
+    private static final int MAX_PAGES_TO_SEARCH = 20;
+    private static final Set<String> PAGES_VISITED = new HashSet<>();
+    private static final List<String> PAGES_TO_VISIT = new LinkedList<>();
+    public static final List<String[]> data = new ArrayList<>();
+    Contributor contributor = new Contributor();
 
     /**
      * The main search method, which controls the depth of the search,
      * calls the method for making a query, searching for a given word
      * and writing the result to a separate file.
      *
-     * @param url        the url
-     * @param firstWord  the first word
-     * @param secondWord the second word
+     * @param url   the url
+     * @param words the words
      */
-    public void search(String url, String firstWord, String secondWord) {
+    public void execute(String url, String... words) {
 
-        while (this.pagesVisited.size() < MAX_PAGES_TO_SEARCH) {
+        while (PAGES_VISITED.size() < MAX_PAGES_TO_SEARCH) {
             String currentUrl;
-            Acolyte acolyte = new Acolyte();
-            if (this.pagesToVisit.isEmpty()) {
+            if (PAGES_TO_VISIT.isEmpty()) {
                 currentUrl = url;
-                this.pagesVisited.add(url);
+                PAGES_VISITED.add(url);
             } else {
                 currentUrl = this.nextUrl();
             }
-            acolyte.crawl(currentUrl);
-            int firstWordUse = acolyte.searchForWord(firstWord);
-            int secondWordUse = acolyte.searchForWord(secondWord);
-            data.add(new String[]{currentUrl, String.valueOf(firstWordUse), String.valueOf(secondWordUse), String.valueOf(countTotalUsage(firstWordUse, secondWordUse))});
-            System.out.println(currentUrl + "/: " + firstWordUse + " " + secondWordUse + " " + countTotalUsage(firstWordUse, secondWordUse));
+            contributor.crawl(currentUrl);
+            List<String> partsOfResult = makePartsOfResult(currentUrl, words);
+            data.add(partsOfResult.toArray(new String[0]));
+            StringBuilder output = makeResultFromParts(partsOfResult);
+
+            System.out.println(output.toString());
             CsvFileWriter.writeDataToCsvFile(CSV_FILE_PATH, data);
-            this.pagesToVisit.addAll(acolyte.getLinks());
+
+            PAGES_TO_VISIT.addAll(contributor.getLinks());
         }
-        logger.info("Done! Visited " + this.pagesVisited.size() + " web page(s)");
+        List<String[]> topTenHits = makeSortedStrings();
+        CsvFileWriter.writeDataToCsvFile(CSV_TOP_TEN_FILE_PATH, topTenHits);
+        logger.info("Done! Visited " + PAGES_VISITED.size() + " web page(s)");
     }
 
-    /**
-     * Method that iterates over the list of pages to visit
-     * and returns the next URL if it is in the set of visited pages.
-     *
-     * @return Next URL from pages to visit list
-     */
+    private List<String[]> makeSortedStrings() {
+        return data.stream()
+                .sorted(new HitsComparator().reversed())
+                .limit(10)
+                .collect(Collectors.toList());
+    }
+
+    private StringBuilder makeResultFromParts(List<String> outputValues) {
+        StringBuilder output = new StringBuilder();
+        output.append(outputValues.get(0)).append("/: ");
+        for (int i = 1; i < outputValues.size(); i++) {
+            output.append(outputValues.get(i)).append(StringUtils.SPACE);
+        }
+        return output;
+    }
+
+    private List<String> makePartsOfResult(String currentUrl, String[] words) {
+        List<String> outputValues = new ArrayList<>();
+        List<Integer> numberOfUsesOfGivenWords = new ArrayList<>();
+        outputValues.add(currentUrl);
+        for (String word : words) {
+            int numberOfUsage = contributor.searchForWord(word);
+            numberOfUsesOfGivenWords.add(numberOfUsage);
+            outputValues.add(String.valueOf(numberOfUsage));
+        }
+        outputValues.add(String.valueOf(countTotalUsage(numberOfUsesOfGivenWords.stream().mapToInt(i -> i).toArray())));
+        return outputValues;
+    }
+
     private String nextUrl() {
         String nextUrl;
         do {
-            nextUrl = this.pagesToVisit.remove(0);
-        } while (this.pagesVisited.contains(nextUrl));
-        this.pagesVisited.add(nextUrl);
+            nextUrl = PAGES_TO_VISIT.remove(0);
+        } while (PAGES_VISITED.contains(nextUrl));
+        PAGES_VISITED.add(nextUrl);
         return nextUrl;
     }
 
-    /**
-     * The method counts the number of common uses of all words on the page.
-     *
-     * @param firstWordUsage  the first word that is involved in the search
-     * @param secondWordUsage the second word that is involved in the search
-     * @return Integer words common use
-     */
-    private int countTotalUsage(int firstWordUsage, int secondWordUsage) {
-        return firstWordUsage + secondWordUsage;
+    private int countTotalUsage(int... usages) {
+        return Arrays.stream(usages).sum();
     }
 }

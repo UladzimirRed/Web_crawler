@@ -10,6 +10,7 @@ public class Main {
     private static final String URL = "https://compscicenter.ru/";
     private static final String FIRST_WORD = "Computer";
     private static final String SECOND_WORD = "Center";
+    private static final String THIRD_WORD = "Science";
 
     /**
      * The entry point of application.
@@ -18,6 +19,6 @@ public class Main {
      */
     public static void main(String[] args) {
         Disposer disposer = new Disposer();
-        disposer.search(URL, FIRST_WORD, SECOND_WORD);
+        disposer.execute(URL, FIRST_WORD, SECOND_WORD);
     }
 }

@@ -1,37 +1,55 @@
 package org.website.task.util;
 
-import com.opencsv.CSVWriter;
-import org.easymock.EasyMock;
-import org.junit.Test;
-import org.powermock.api.mockito.PowerMockito;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.StringWriter;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
-public class CsvFileWriterTest {
-
+/**
+ * The type Csv file writer test.
+ */
+class CsvFileWriterTest {
+    /**
+     * Creates csv file test.
+     *
+     * @param path the path
+     */
     @Test
-    public void writeDataToCsvFileTest() throws Exception {
-        List<String[]> dataList = new ArrayList<>();
-        String[] st = new String[5];
-        st[0] = "hai";
-        dataList.add(st);
-        File fileMock = EasyMock.createMock(File.class);
-        CSVWriter writer = new CSVWriter(new StringWriter(),
-                CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER);
-        EasyMock.expect(fileMock.toPath()).andReturn(Paths.get("test.csv"));
-        PowerMockito.mock(CSVWriter.class);
-        PowerMockito.mock(FileWriter.class);
-        PowerMockito.whenNew(FileWriter.class).withArguments(new File("test.csv").toPath().toString()).thenReturn(null);
-        PowerMockito
-                .whenNew(CSVWriter.class)
-                .withArguments(null, CSVWriter.DEFAULT_SEPARATOR,
-                        CSVWriter.NO_QUOTE_CHARACTER).thenReturn(writer);
-        boolean expected = false;
-        CsvFileWriter.writeDataToCsvFile(fileMock.toPath().toString(), dataList);
+    void createsCsvFile(@TempDir final Path path) {
+        final var csv = path.resolve("test.csv");
+        CsvFileWriter.writeDataToCsvFile(
+                csv.toString(),
+                List.of(
+                        new String[]{"1", "abc"},
+                        new String[]{"2", "def"}
+                )
+        );
+        Assertions.assertTrue(csv.toFile().exists());
+    }
+
+    /**
+     * Writes data to csv test.
+     *
+     * @param temp the temp
+     * @throws IOException the io exception
+     */
+    @Test
+    void writesDataToCsv(@TempDir final Path temp) throws IOException {
+        final var csv = temp.resolve("test.csv");
+        CsvFileWriter.writeDataToCsvFile(
+                csv.toString(),
+                List.of(
+                        new String[]{"1", "abc"},
+                        new String[]{"2", "def"}
+                )
+        );
+        Assertions.assertEquals(
+                Files.readAllLines(csv),
+                List.of("1 abc", "2 def")
+        );
     }
 }

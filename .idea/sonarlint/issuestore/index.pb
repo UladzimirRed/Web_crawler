@@ -1,11 +1,19 @@
 
-]
--src/test/java/org/mywebsite/DisposerTest.java,c\7\c76a3f69bb39698d240ee661b19eff2fbd612e72
-^
-.src/main/java/org/website/crawler/Acolyte.java,f\2\f277de8f330535ad0e9e4b869652d5b99d47b546
-[
-+src/main/java/org/website/crawler/Main.java,9\c\9c6e9369514f7aef499ed4811308053b658bb0c9
-_
-/src/main/java/org/website/crawler/Disposer.java,e\a\ea1f25863203498bbc017072d061ae7bb1d5d4e3
 7
 pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec
+h
+8src/test/java/org/website/task/crawler/DisposerTest.java,d\3\d3597a3b783f8f0f9968322afac800b173847200
+g
+7src/test/java/org/website/task/crawler/AcolyteTest.java,f\a\fa6b1b0e6eb4ca50451bb9105527b65f89443c4b
+n
+>src/main/java/org/website/task/exception/ProjectException.java,3\5\35421ae38825ee4be423f8c89d9d6c83d5c976e5
+j
+:src/test/java/org/website/task/util/CsvFileWriterTest.java,8\5\85b7a502f102b40430d75c80e3c585ac345e1280
+c
+3src/main/java/org/website/task/crawler/Acolyte.java,4\a\4a6c67e67ba90d00d22ee6a5e54c11ee99d6b9e8
+d
+4src/main/java/org/website/task/crawler/Disposer.java,b\d\bd4e675642eb334f8d507f0a18d70706b6677f16
+]
+-src/main/java/org/website/task/main/Main.java,2\1\21d63fd8ffe6a8fe9a64d4ad696005be0a9a4600
+f
+6src/main/java/org/website/task/util/CsvFileWriter.java,e\0\e0d29865cb40bfa3f95e5c929187981ddf64b701

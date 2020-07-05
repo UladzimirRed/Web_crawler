@@ -17,11 +17,11 @@ import java.util.List;
  * searches for the given word on this page
  * and counts how many times this word is repeated on this page
  */
-public class Acolyte {
+public class Contributor {
     private static Logger logger = LogManager.getLogger();
+    private static final int HTTP_STATUS_OK = 200;
     private List<String> links = new LinkedList<>();
     private Document htmlDocument;
-    private static final int HTTP_STATUS_OK = 200;
 
     /**
      * This method makes an HTTP request, checks the response, and then gathers
@@ -33,7 +33,7 @@ public class Acolyte {
     public boolean crawl(String url) {
         try {
             Connection connection = Jsoup.connect(url);
-            this.htmlDocument = connection.get();
+            htmlDocument = connection.get();
 
             if (connection.response().statusCode() == HTTP_STATUS_OK) {
                 logger.info("Visiting.. Received web page at " + url);
@@ -45,7 +45,7 @@ public class Acolyte {
             Elements linksOnPage = htmlDocument.select("a[href]");
             logger.info("Found " + linksOnPage.size() + " links");
             for (Element link : linksOnPage) {
-                this.links.add(link.absUrl("href"));
+                links.add(link.absUrl("href"));
             }
             return true;
         } catch (IOException e) {
@@ -63,12 +63,12 @@ public class Acolyte {
      */
     public int searchForWord(String searchWord) {
         int count = 0;
-        if (this.htmlDocument == null) {
+        if (htmlDocument == null) {
             logger.error("Call crawl() before performing analysis on the document");
         }
         logger.info("Searching for the word " + searchWord + "...");
 
-        String bodyText = this.htmlDocument.body().text();
+        String bodyText = htmlDocument.body().text();
         for (int index = -1; (index = bodyText.indexOf(searchWord, index + 1)) != -1; count++) ;
         logger.info("Used " + count + " times");
 
