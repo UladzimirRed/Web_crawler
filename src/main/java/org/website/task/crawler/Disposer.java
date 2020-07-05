@@ -1,6 +1,5 @@
 package org.website.task.crawler;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.website.task.util.CsvFileWriter;
@@ -15,11 +14,11 @@ import java.util.stream.Collectors;
  * sets a limit on the search depth, counts the total number of words used on each of the URLs
  */
 public class Disposer {
-    private static Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger();
     private static final String CSV_FILE_PATH = "./src/main/resources/data/result.csv";
     private static final String CSV_TOP_TEN_FILE_PATH = "./src/main/resources/data/resultTop.csv";
 
-    private static final int MAX_PAGES_TO_SEARCH = 20;
+    private static final int MAX_PAGES_TO_SEARCH = 30;
     private static final Set<String> PAGES_VISITED = new HashSet<>();
     private static final List<String> PAGES_TO_VISIT = new LinkedList<>();
     public static final List<String[]> data = new ArrayList<>();
@@ -46,32 +45,13 @@ public class Disposer {
             contributor.crawl(currentUrl);
             List<String> partsOfResult = makePartsOfResult(currentUrl, words);
             data.add(partsOfResult.toArray(new String[0]));
-            StringBuilder output = makeResultFromParts(partsOfResult);
-
-            System.out.println(output.toString());
             CsvFileWriter.writeDataToCsvFile(CSV_FILE_PATH, data);
-
             PAGES_TO_VISIT.addAll(contributor.getLinks());
         }
         List<String[]> topTenHits = makeSortedStrings();
         CsvFileWriter.writeDataToCsvFile(CSV_TOP_TEN_FILE_PATH, topTenHits);
+        topTenHits.forEach(arr -> System.out.println(Arrays.toString(arr)));
         logger.info("Done! Visited " + PAGES_VISITED.size() + " web page(s)");
-    }
-
-    private List<String[]> makeSortedStrings() {
-        return data.stream()
-                .sorted(new HitsComparator().reversed())
-                .limit(10)
-                .collect(Collectors.toList());
-    }
-
-    private StringBuilder makeResultFromParts(List<String> outputValues) {
-        StringBuilder output = new StringBuilder();
-        output.append(outputValues.get(0)).append("/: ");
-        for (int i = 1; i < outputValues.size(); i++) {
-            output.append(outputValues.get(i)).append(StringUtils.SPACE);
-        }
-        return output;
     }
 
     private List<String> makePartsOfResult(String currentUrl, String[] words) {
@@ -85,6 +65,13 @@ public class Disposer {
         }
         outputValues.add(String.valueOf(countTotalUsage(numberOfUsesOfGivenWords.stream().mapToInt(i -> i).toArray())));
         return outputValues;
+    }
+
+    private List<String[]> makeSortedStrings() {
+        return data.stream()
+                .sorted(new HitsComparator().reversed())
+                .limit(10)
+                .collect(Collectors.toList());
     }
 
     private String nextUrl() {
