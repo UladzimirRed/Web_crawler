@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.website.task.util.CsvFileWriter;
 import org.website.task.util.HitsComparator;
+import org.website.task.util.UrlNormalizer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ public class Disposer {
     private static final String CSV_FILE_PATH = "./src/main/resources/data/result.csv";
     private static final String CSV_TOP_TEN_FILE_PATH = "./src/main/resources/data/resultTop.csv";
 
-    private static final int MAX_PAGES_TO_SEARCH = 30;
+    private static final int MAX_PAGES_TO_SEARCH = 100;
     private static final Set<String> PAGES_VISITED = new HashSet<>();
     private static final List<String> PAGES_TO_VISIT = new LinkedList<>();
     public static final List<String[]> overallResultData = new ArrayList<>();
@@ -42,11 +43,15 @@ public class Disposer {
             } else {
                 currentUrl = this.nextUrl();
             }
-            contributor.crawl(currentUrl);
-            List<String> partsOfResult = makePartsOfResult(currentUrl, words);
-            overallResultData.add(partsOfResult.toArray(new String[0]));
-            CsvFileWriter.writeDataToCsvFile(CSV_FILE_PATH, overallResultData);
-            PAGES_TO_VISIT.addAll(contributor.getLinks());
+            String normalizedUrl = UrlNormalizer.normalizeUrl(currentUrl);
+            if (Contributor.crawl(normalizedUrl)) {
+                List<String> partsOfResult = makePartsOfResult(normalizedUrl, words);
+                overallResultData.add(partsOfResult.toArray(new String[0]));
+                CsvFileWriter.writeDataToCsvFile(CSV_FILE_PATH, overallResultData);
+                PAGES_TO_VISIT.addAll(contributor.getLinks());
+            } else {
+                logger.warn("Url: " + normalizedUrl + " is incorrect");
+            }
         }
         List<String[]> topTenHits = makeSortedStrings();
         CsvFileWriter.writeDataToCsvFile(CSV_TOP_TEN_FILE_PATH, topTenHits);
@@ -86,4 +91,21 @@ public class Disposer {
     private int countTotalUsage(int... usages) {
         return Arrays.stream(usages).sum();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Disposer disposer = (Disposer) o;
+
+        return contributor != null ? contributor.equals(disposer.contributor) : disposer.contributor == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return contributor != null ? contributor.hashCode() : 0;
+    }
 }
+
+

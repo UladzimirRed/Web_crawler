@@ -10,6 +10,7 @@ import org.jsoup.select.Elements;
 import org.website.task.exception.ProjectException;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,8 +22,9 @@ import java.util.List;
 public class Contributor {
     private static final Logger logger = LogManager.getLogger();
     private static final List<String> links = new LinkedList<>();
-    private static final int HTTP_STATUS_OK = 200;
-    private Document htmlDocument;
+    private static final String USER_AGENT =
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.112 Safari/535.1";
+    private static Document htmlDocument;
 
     /**
      * This method makes an HTTP request, checks the response, and then gathers
@@ -31,17 +33,15 @@ public class Contributor {
      * @param url - The URL to visit
      * @return whether or not the crawl was successful
      */
-    public boolean crawl(String url) {
+    public static boolean crawl(String url) {
         try {
-            Connection connection = Jsoup.connect(url);
+            Connection connection = Jsoup.connect(url).userAgent(USER_AGENT).followRedirects(false);
             htmlDocument = connection.get();
-
-            if (connection.response().statusCode() == HTTP_STATUS_OK) {
-                logger.info("Visiting.. Received web page at " + url);
-            }
-            if (!connection.response().contentType().contains("text/html")) {
-                logger.warn("Failure.. Retrieved something other than HTML");
-                return false;
+            boolean isRedirect = Contributor.isRedirect(connection);
+            if (isRedirect) {
+                logger.info("Redirecting.. Received web page at " + connection.execute().url());
+            } else {
+                logger.info("Visiting.. Received web page at " + connection.execute().url());
             }
             Elements linksOnPage = htmlDocument.select("a[href]");
             logger.info("Found " + linksOnPage.size() + " links");
@@ -49,7 +49,7 @@ public class Contributor {
                 links.add(link.absUrl("href"));
             }
             return true;
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
             logger.warn("We were not successful in our HTTP request", e);
             return false;
         }
@@ -86,6 +86,14 @@ public class Contributor {
      */
     public List<String> getLinks() {
         return links;
+    }
+
+    private static boolean isRedirect(Connection connection) {
+        return connection.response().statusCode() == HttpURLConnection.HTTP_MOVED_PERM
+                || connection.response().statusCode() == HttpURLConnection.HTTP_MOVED_TEMP
+                || connection.response().statusCode() == HttpURLConnection.HTTP_MULT_CHOICE
+                || connection.response().statusCode() == HttpURLConnection.HTTP_SEE_OTHER
+                || connection.response().statusCode() == HttpURLConnection.HTTP_NOT_MODIFIED;
     }
 }
 
